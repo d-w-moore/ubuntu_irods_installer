@@ -27,12 +27,17 @@ usage () {
         --irods=Imajor.Iminor.Ipatch [ or just --irods=... or --i=... ]
             specify irods version
 
-        --with-options="opt1 opt2 [...]" [ or just --with=... or --w=...]
+        --[with-options|with|w]="opt1 opt2 [...]"
             where optN... is:
                phase option-names
-                 4      basic
-                 0      backup config-essentials create-db add-package-repo
-                        add-coredev-repo add-build-externals
+                 0      sudo-without-pw     - what it sounds like (this script depends on it)
+                 0      backup              - tar up the essential irods directories
+                 0      config-essentials   - install miscellaneous prerequisites for irods 
+                 0      create-db           - create postgres
+                 0      add-package-repo    - enable repos for irods install prerequisite pkgs
+                 0      add-coredev-repo    - enable repos for building prerequisite packages
+                 0      add-build-externals - install irods-externals for building from source
+                 4      basic               - install runtime and dev packages only
 
         -r  use APT for a remote install based on IRODS_VSN (-i)
             (this options causes DEV_REPOS to be ignored)
@@ -141,6 +146,15 @@ run_phase() {
 
  0)
 
+    if [[ $with_opts = *\ sudo-without-pw\ * ]]; then
+      if [ -f "/etc/sudoers" ]; then
+         sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
+      else
+         echo >&2 "WARNING - Could not modify sudoers files"
+         echo -n >&2 "           (hit 'Enter' to continue)"
+         read key
+      fi
+    fi
 #   #------ (needed for both package install and build from source)
 
     if [[ $with_opts = *\ config-essentials\ * ]]; then
