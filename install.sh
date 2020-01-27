@@ -38,6 +38,7 @@ usage () {
                  0      add-coredev-repo    - enable repos for building prerequisite packages
                  0      add-build-externals - install irods-externals for building from source
                  4      basic               - install runtime and dev packages only
+                 4      basic-skip          - install server and database packages only
 
         -r  use APT for a remote install based on IRODS_VSN (-i)
             (this options causes DEV_REPOS to be ignored)
@@ -317,6 +318,9 @@ ________"
    cd $DEV_REPOS/build__irods &&\
    if [[ $with_opts = *" basic "* ]]; then
      sudo dpkg -i irods-dev_${IRODS_VSN}~*.deb  irods-runtime_${IRODS_VSN}~*.deb
+   elif [[ $with_opts = *" basic-skip "* ]]; then
+     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}~*.deb  &&\
+     sudo dpkg -i irods-server_${IRODS_VSN}~*.deb  irods-database-plugin-postgres_${IRODS_VSN}~*.deb
    else
      sudo dpkg -i irods-dev_${IRODS_VSN}~*.deb  irods-runtime_${IRODS_VSN}~*.deb  && \
      sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}~*.deb  &&\
