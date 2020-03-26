@@ -304,28 +304,33 @@ ________"
  if [ -f "$IRODS_BASH_HISTORY" ] ; then
      sudo su irods -c "cp -rp '$IRODS_BASH_HISTORY' /tmp/iRODS_History"
  fi
- # --- Don't rename or delete /usr/lib/irods if any non-externals are pkgs still installed ---
- USR_LIB_IRODS=""
- [ -d /usr/lib/irods ] && USR_LIB_IRODS="action"
- dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
-                 | grep -Ev '^\w+\s+irods-externals' >/dev/null && \
- {
-   USR_LIB_IRODS=""
-   echo '********************************************************'
-   echo '**   /usr/lib/irods will not be modified or deleted   **'
-   echo '********************************************************'
- } >&2
- Action="Remove"; oldrods=""
+ : ${USR_LIB_IRODS=U}  #  variable unset - can rename / delete if exists
+ : ${USR_LIB_IRODS:=E} #  variable empty - leave dir alone
+ [ -d /usr/lib/irods ] && [[ $USR_LIB_IRODS != [0E] ]] && USR_LIB_IRODS="alter"
+# --- Don't rename or delete /usr/lib/irods if any non-externals are pkgs still installed 
+#     In any case do not rename / delete if USR_LIB_IRODS=="" or doesn't match "0" or "E"
+dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
+                | grep -Ev '^\w+\s+irods-externals' >/dev/null && \
+{
+  USR_LIB_IRODS=""
+  echo '********************************************************'
+  echo '**   /usr/lib/irods will not be modified or deleted   **'
+  echo '********************************************************'
+} >&2
+ echo >&2 "USR_LIB_IRODS=($USR_LIB_IRODS)"
+
+ Action="Remove"
+ oldrods=""
  if [ "$RODS_DIR_PRESERVE" -gt 0 ]; then
     oldrods=`date +%s`
     Action="Rename"
     sudo su - -c "mv /etc/irods{,.0$oldrods}
                   mv /var/lib/irods{,.0$oldrods}
                   rm -fr  /tmp/irods "
-    [ -n "$USR_LIB_IRODS" ] && sudo su - -c "mv /usr/lib/irods{,.0$oldrods}"
+    [ "$USR_LIB_IRODS" = alter ] && sudo su - -c "mv /usr/lib/irods{,.0$oldrods}"
  else
     sudo rm -fr /etc/irods /var/lib/irods /tmp/irods
-    [ -n "$USR_LIB_IRODS" ] && sudo rm -fr /usr/lib/irods
+    [ "$USR_LIB_IRODS" = alter ] && sudo rm -fr /usr/lib/irods
  fi
  echo >&2 "${Action} old iRODS directories"
  if [ -n "$oldrods" ]; then
