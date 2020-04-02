@@ -166,7 +166,7 @@ run_phase() {
           sudo su - root -c \
            "env DEBIAN_FRONTEND=noninteractive bash -c 'apt-get install -y tzdata'"
         fi
-
+        sudo apt-get update
         sudo apt-get install -y software-properties-common apt-transport-https vim git postgresql wget
         sudo apt-get update && sudo apt-get install -y vim python-pip libfuse2 unixodbc rsyslog less
         sudo pip install xmlrunner
@@ -181,7 +181,8 @@ run_phase() {
 
 	    prt_phase   add-coredev-repo
 
-        sudo apt-get install -y software-properties-common
+        sudo apt update
+        sudo apt-get install -y software-properties-common lsb-release
         #sudo add-apt-repository -r renci-irods # --?-- should be able to have packages & core-dev --?--
         wget -qO - https://core-dev.irods.org/irods-core-dev-signing-key.asc | sudo apt-key add -
         echo "deb [arch=amd64] https://core-dev.irods.org/apt/ $(lsb_release -sc) main" | \
@@ -214,6 +215,8 @@ run_phase() {
 
 	    prt_phase   add-package-repo
 
+      sudo apt update
+      sudo apt install -y lsb-release apt-transport-https
       wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
       echo "deb [arch=amd64] https://packages.irods.org/apt/ $(lsb_release -sc) main" |\
           sudo tee /etc/apt/sources.list.d/renci-irods.list
