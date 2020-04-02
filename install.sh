@@ -148,14 +148,25 @@ run_phase() {
  0)
 
     if [[ $with_opts = *\ sudo-without-pw\ * ]]; then
-      if [ -f "/etc/sudoers" ]; then
-         sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
+      if [ `id -u` = 0 ] ; then
+        echo >&2 "root authorization for 'sudo' is automatic - no /etc/sudoers modification needed"
       else
-         echo >&2 "WARNING - Could not modify sudoers files"
-         echo -n >&2 "           (hit 'Enter' to continue)"
-         read key
-      fi
-    fi
+	if [ -f "/etc/sudoers" ]; then
+	   if [ -n "USER" ] ; then
+             # add a line with our USER name to /etc/sudoers if not already there
+	     sudo su -c "sed -n '/^\s*[^#]/p' /etc/sudoers | grep '^$USER\s*ALL=(ALL)\s*NOPASSWD:\s*ALL\s*$' >/dev/null" || \
+	     sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
+	   else
+	     echo >&2 "user login is '$USER' - can this be right?"
+	   fi
+	else
+	   echo >&2 "WARNING - Could not modify sudoers files"
+	   echo -n >&2 "           (hit 'Enter' to continue)"
+	   read key
+	fi
+      fi # not root
+    fi # with-opts
+
 #   #------ (needed for both package install and build from source)
 
     if [[ $with_opts = *\ config-essentials\ * ]]; then
