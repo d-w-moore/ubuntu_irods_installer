@@ -152,7 +152,7 @@ run_phase() {
         echo >&2 "root authorization for 'sudo' is automatic - no /etc/sudoers modification needed"
       else
 	if [ -f "/etc/sudoers" ]; then
-	   if [ -n "USER" ] ; then
+	   if [ -n "$USER" ] ; then
              # add a line with our USER name to /etc/sudoers if not already there
 	     sudo su -c "sed -n '/^\s*[^#]/p' /etc/sudoers | grep '^$USER\s*ALL=(ALL)\s*NOPASSWD:\s*ALL\s*$' >/dev/null" || \
 	     sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
