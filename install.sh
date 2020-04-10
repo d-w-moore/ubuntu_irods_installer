@@ -8,8 +8,30 @@ DEV_HOME="$HOME"
 : ${DEV_REPOS:="$DEV_HOME/github"}
 : ${DIR_FOR_BACKUPS:=$DEV_HOME}
 RODS_DIR_PRESERVE=1
-: ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"}
+: ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"} 
+
 quit_on_phase_err='1'
+
+# if getting packages for a different release than the current machine (eg Ub16 on 18)
+# set to "xenial" if targetting Ubuntu16 irods pkgs
+#--------------------------------------------------
+: ${UBUNTU_RELEASE_FOR_IRODS=""}
+
+ubuntu_release_for_irods()
+{
+    local Calculated
+    if [ -n "$UBUNTU_RELEASE_FOR_IRODS" ]; then
+        echo -n "$UBUNTU_RELEASE_FOR_IRODS"
+    else
+        Calculated="$(lsb_release -sc)"
+        if [ $? -ne 0 -o -z "$Calculated" ]
+        then
+            echo >&2 "Can't get ubuntu release name" ; exit 124 
+        else
+            echo -n "$Calculated"
+        fi
+    fi
+}
 
 usage () {
    echo >&2 $(basename "$0") '[option...]'
@@ -51,7 +73,12 @@ usage () {
                  6 : install Python RE plugin
                  7 : configure Python RE plugin
 	EOF
-   echo >&2 "Currently IRODS_VSN='$IRODS_VSN'; APT_INSTALL='$APT_INSTALL' (override with -o)"
+   {
+       echo "Currently: "
+       echo "Configured for adding repos to get irods packages for '$(ubuntu_release_for_irods)'"
+       echo " (change via UBUNTU_RELEASE_FOR_IRODS environment variable (eg. trusty, xenial)"
+       echo "Other Settings: IRODS_VSN='$IRODS_VSN'; APT_INSTALL='$APT_INSTALL' (override with -o)"
+   } >&2
    exit 123
 }
 
@@ -151,19 +178,19 @@ run_phase() {
       if [ `id -u` = 0 ] ; then
         echo >&2 "root authorization for 'sudo' is automatic - no /etc/sudoers modification needed"
       else
-	if [ -f "/etc/sudoers" ]; then
-	   if [ -n "$USER" ] ; then
+        if [ -f "/etc/sudoers" ]; then
+           if [ -n "$USER" ] ; then
              # add a line with our USER name to /etc/sudoers if not already there
-	     sudo su -c "sed -n '/^\s*[^#]/p' /etc/sudoers | grep '^$USER\s*ALL=(ALL)\s*NOPASSWD:\s*ALL\s*$' >/dev/null" || \
-	     sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
-	   else
-	     echo >&2 "user login is '$USER' - can this be right?"
-	   fi
-	else
-	   echo >&2 "WARNING - Could not modify sudoers files"
-	   echo -n >&2 "           (hit 'Enter' to continue)"
-	   read key
-	fi
+             sudo su -c "sed -n '/^\s*[^#]/p' /etc/sudoers | grep '^$USER\s*ALL=(ALL)\s*NOPASSWD:\s*ALL\s*$' >/dev/null" || \
+             sudo su -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' >>/etc/sudoers"
+           else
+             echo >&2 "user login is '$USER' - can this be right?"
+           fi
+        else
+           echo >&2 "WARNING - Could not modify sudoers files"
+           echo -n >&2 "           (hit 'Enter' to continue)"
+           read key
+        fi
       fi # not root
     fi # with-opts
 
@@ -196,7 +223,7 @@ run_phase() {
         sudo apt-get install -y software-properties-common lsb-release
         #sudo add-apt-repository -r renci-irods # --?-- should be able to have packages & core-dev --?--
         wget -qO - https://core-dev.irods.org/irods-core-dev-signing-key.asc | sudo apt-key add -
-        echo "deb [arch=amd64] https://core-dev.irods.org/apt/ $(lsb_release -sc) main" | \
+        echo "deb [arch=amd64] https://core-dev.irods.org/apt/ $(ubuntu_release_for_irods) main" | \
           sudo tee /etc/apt/sources.list.d/renci-irods-core-dev.list
         sudo apt-get update
 
@@ -229,7 +256,7 @@ run_phase() {
       sudo apt update
       sudo apt install -y lsb-release apt-transport-https
       wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
-      echo "deb [arch=amd64] https://packages.irods.org/apt/ $(lsb_release -sc) main" |\
+      echo "deb [arch=amd64] https://packages.irods.org/apt/ $(ubuntu_release_for_irods) main" |\
           sudo tee /etc/apt/sources.list.d/renci-irods.list
       sudo apt update
     fi
