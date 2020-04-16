@@ -33,6 +33,14 @@ ubuntu_release_for_irods()
     fi
 }
 
+add_coredev_prereq() {
+        # -- iRODS build tools & dependencies
+        sudo  apt-get update
+        sudo  apt-get install -y git ninja-build libpam0g-dev unixodbc-dev libkrb5-dev libfuse-dev \
+                       libcurl4-gnutls-dev libbz2-dev libxml2-dev zlib1g-dev python-dev \
+                       make gcc help2man
+}
+
 usage () {
    echo >&2 $(basename "$0") '[option...]'
    cat >&2 <<-'EOF'
@@ -57,8 +65,9 @@ usage () {
                  0      config-essentials   - install miscellaneous prerequisites for irods 
                  0      create-db           - create postgres
                  0      add-package-repo    - enable repos for irods install prerequisite pkgs
+                 0      add-coredev-prereq  - install package requirements for building
                  0      add-coredev-repo    - enable repos for building prerequisite packages
-                 0      add-build-externals - install irods-externals for building from source
+                 0      add-build-externals - do everything to prepare for building
                  4      basic               - install runtime and dev packages only
                  4      basic-skip          - install server and database packages only
 
@@ -211,7 +220,11 @@ run_phase() {
         sudo service postgresql start
     fi
 
-    #------ CORE DEV stuff / build from source
+    #------ CORE-DEV -- things for building from source
+
+    if [[ $with_opts = *\ add-coredev-prereq\ * ]]; then
+        add_coredev_prereq
+    fi
 
     [[ $with_opts = *\ add-build-externals\ * ]] && { with_opts+=" add-coredev-repo "; } # --> dependency
 
@@ -240,12 +253,10 @@ run_phase() {
 
 	    prt_phase   add-build-externals
 
+        add_coredev_prereq
+
         sudo apt-get install -y irods-externals\*
 
-        # -- build  iRODS dependencies
-        sudo  apt-get install -y git ninja-build libpam0g-dev unixodbc-dev libkrb5-dev libfuse-dev \
-                       libcurl4-gnutls-dev libbz2-dev libxml2-dev zlib1g-dev python-dev \
-                       make gcc help2man
 
     fi
 
