@@ -33,12 +33,20 @@ ubuntu_release_for_irods()
     fi
 }
 
+get_irods_runtime_support()
+{
+        sudo apt-get  install -y apt-transport-https wget lsb-release sudo \
+                       python python-psutil python-requests python-jsonschema \
+                       libssl-dev super lsof postgresql odbc-postgresql libjson-perl
+}
+
 add_build_prereq() {
         # -- iRODS build tools & dependencies
         sudo  apt-get update
         sudo  apt-get install -y git ninja-build libpam0g-dev unixodbc-dev libkrb5-dev libfuse-dev \
                        libcurl4-gnutls-dev libbz2-dev libxml2-dev zlib1g-dev python-dev \
                        make gcc help2man libssl-dev
+        get_irods_runtime_support
 }
 
 usage () {
@@ -242,11 +250,7 @@ run_phase() {
 
         sudo apt install -y libssl-dev rsyslog # packages uniquely required in iRODS master branch
 
-        # -- basic  iRODS dependencies (?)
-        sudo apt-get  install -y apt-transport-https wget lsb-release sudo \
-                       python python-psutil python-requests python-jsonschema \
-                       libssl-dev super lsof postgresql odbc-postgresql libjson-perl
-
+        get_irods_runtime_support
     fi
 
     if [[ $with_opts = *\ add-build-externals\ * ]]; then
