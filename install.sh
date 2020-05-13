@@ -73,6 +73,7 @@ usage () {
                  0      config-essentials   - install miscellaneous prerequisites for irods 
                  0      create-db           - create postgres
                  0      add-package-repo    - enable repos for irods install prerequisite pkgs
+                 0      add-needed-runtime  - get all needed packages for building/running production
                  0      add-coredev-repo    - enable repos for building prerequisite packages
                  0      add-build-prereq    - install package requirements for building, but no coredev repo
                  0      add-build-externals - do everything to prepare for building
@@ -228,11 +229,17 @@ run_phase() {
         sudo service postgresql start
     fi
 
-    #------ CORE-DEV -- things for building from source
 
     if [[ $with_opts = *\ add-build-prereq\ * ]]; then
         add_build_prereq
     fi
+
+    if [[ $with_opts = *\ add-needed-runtime\ * ]]  then
+        add_build_prereq
+        sudo apt install -y irods-externals\*
+    fi
+
+    #------ CORE-DEV -- things for building master branch
 
     [[ $with_opts = *\ add-build-externals\ * ]] && { with_opts+=" add-coredev-repo "; } # --> dependency
 
