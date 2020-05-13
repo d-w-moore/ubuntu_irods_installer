@@ -234,7 +234,8 @@ run_phase() {
         add_build_prereq
     fi
 
-    if [[ $with_opts = *\ add-needed-runtime\ * ]]  then
+    if [[ $with_opts = *\ add-needed-runtime\ * ]];  then
+	    prt_phase   added-needed-runtime
         add_build_prereq
         sudo apt install -y irods-externals\*
     fi
