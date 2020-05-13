@@ -229,9 +229,20 @@ run_phase() {
         sudo service postgresql start
     fi
 
-
     if [[ $with_opts = *\ add-build-prereq\ * ]]; then
         add_build_prereq
+    fi
+
+    if [[ $with_opts = *\ add-package-repo\ * ]]; then
+
+	    prt_phase   add-package-repo
+
+      sudo apt update
+      sudo apt install -y lsb-release apt-transport-https
+      wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
+      echo "deb [arch=amd64] https://packages.irods.org/apt/ $(ubuntu_release_for_irods) main" |\
+          sudo tee /etc/apt/sources.list.d/renci-irods.list
+      sudo apt update
     fi
 
     if [[ $with_opts = *\ add-needed-runtime\ * ]];  then
@@ -270,18 +281,6 @@ run_phase() {
         sudo apt-get install -y irods-externals\*
 
 
-    fi
-
-    if [[ $with_opts = *\ add-package-repo\ * ]]; then
-
-	    prt_phase   add-package-repo
-
-      sudo apt update
-      sudo apt install -y lsb-release apt-transport-https
-      wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
-      echo "deb [arch=amd64] https://packages.irods.org/apt/ $(ubuntu_release_for_irods) main" |\
-          sudo tee /etc/apt/sources.list.d/renci-irods.list
-      sudo apt update
     fi
 
     if [[ $with_opts = *\ create-db\ * ]]; then
