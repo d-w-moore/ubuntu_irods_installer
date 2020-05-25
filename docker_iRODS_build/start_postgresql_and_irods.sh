@@ -9,4 +9,4 @@ do
 done
 [ -z "$x" ] || { echo >&2 "Error -- database didn't start" ; exit 1; }
 
-id -u irods >/dev/null 2>&1 || ~/ubuntu_irods_installer/install.sh  --i=4.2.7  5
+id -u irods >/dev/null 2>&1 || ~/ubuntu_irods_installer/install.sh 5
