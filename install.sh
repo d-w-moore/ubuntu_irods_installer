@@ -2,7 +2,7 @@
 
 : ${PHASE_VERBOSE:=1}
 : ${APT_INSTALL:=0}
-: ${IRODS_VSN:=4.2.7}
+: ${IRODS_VSN:=4.2.8}
 IRODS_HOME=/var/lib/irods
 DEV_HOME="$HOME"
 : ${DEV_REPOS:="$DEV_HOME/github"}
