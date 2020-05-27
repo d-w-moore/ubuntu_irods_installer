@@ -8,7 +8,7 @@ DEV_HOME="$HOME"
 : ${DEV_REPOS:="$DEV_HOME/github"}
 : ${DIR_FOR_BACKUPS:=$DEV_HOME}
 RODS_DIR_PRESERVE=1
-: ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"} 
+: ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"}
 
 quit_on_phase_err='1'
 
@@ -26,7 +26,7 @@ ubuntu_release_for_irods()
         Calculated="$(lsb_release -sc)"
         if [ $? -ne 0 -o -z "$Calculated" ]
         then
-            echo >&2 "Can't get ubuntu release name" ; exit 124 
+            echo >&2 "Can't get ubuntu release name" ; exit 124
         else
             echo -n "$Calculated"
         fi
@@ -70,7 +70,7 @@ usage () {
                phase option-names
                  0      sudo-without-pw     - what it sounds like (this script depends on it)
                  0      backup              - tar up the essential irods directories
-                 0      config-essentials   - install miscellaneous prerequisites for irods 
+                 0      config-essentials   - install miscellaneous prerequisites for irods
                  0      create-db           - create postgres
                  0      add-package-repo    - enable repos for irods install prerequisite pkgs
                  0      add-needed-runtime  - get all needed packages for building/running production
@@ -356,7 +356,7 @@ ________"
  : ${USR_LIB_IRODS=U}  #  variable unset - can rename / delete if exists
  : ${USR_LIB_IRODS:=E} #  variable empty - leave dir alone
  [ -d /usr/lib/irods ] && [[ $USR_LIB_IRODS != [0E] ]] && USR_LIB_IRODS="alter"
-# --- Don't rename or delete /usr/lib/irods if any non-externals are pkgs still installed 
+# --- Don't rename or delete /usr/lib/irods if any non-externals are pkgs still installed
 #     In any case do not rename / delete if USR_LIB_IRODS=="" or doesn't match "0" or "E"
 dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
                 | grep -Ev '^\w+\s+irods-externals' >/dev/null && \
@@ -418,10 +418,15 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
 
  6)
  if [ "$APT_INSTALL" -gt 0 ]; then
-   sudo apt install irods-rule-engine-plugin-python${IRODS_VSN:+"=$IRODS_VSN"}
+   if [ "$IRODS_VSN" ">" "4.2." -a "${IRODS_VSN##*.}" -gt 7 ] ; then
+     EXT='.*'
+   else
+     EXT=''
+   fi
+   sudo apt install irods-rule-engine-plugin-python${IRODS_VSN:+"=$IRODS_VSN${EXT}"}
  else
    cd $DEV_REPOS/build__irods_rule_engine_plugin_python/ &&\
-   sudo dpkg -i irods-rule-engine-plugin-python-${IRODS_VSN}-*.deb
+   sudo dpkg -i irods-rule-engine-plugin-python-${IRODS_VSN}[-.]*.deb
  fi
  ;;
 
