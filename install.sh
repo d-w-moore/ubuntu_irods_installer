@@ -9,6 +9,7 @@ DEV_HOME="$HOME"
 : ${DIR_FOR_BACKUPS:=$DEV_HOME}
 RODS_DIR_PRESERVE=1
 : ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"}
+: ${FORCE_APT_CMD:=0}
 
 quit_on_phase_err='1'
 
@@ -31,6 +32,22 @@ ubuntu_release_for_irods()
             echo -n "$Calculated"
         fi
     fi
+}
+
+add_package_repo()
+{
+      local R="/etc/apt/sources.list.d/renci-irods.list"
+      if [ .$1 = .-f ] || [ -n "$FORCE_APT_CMD" ] || [ ! -f "$R" ] ; then
+          echo >&2 "... installing package repo"
+          sudo apt update
+          sudo apt install -y lsb-release apt-transport-https
+          wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
+          echo "deb [arch=amd64] https://packages.irods.org/apt/ $(ubuntu_release_for_irods) main" |\
+              sudo tee "$R"
+          sudo apt update
+      else
+          echo >&2 "... package repo already installed"
+      fi
 }
 
 get_irods_runtime_support()
@@ -236,18 +253,14 @@ run_phase() {
     if [[ $with_opts = *\ add-package-repo\ * ]]; then
 
 	    prt_phase   add-package-repo
-
-      sudo apt update
-      sudo apt install -y lsb-release apt-transport-https
-      wget -qO - https://packages.irods.org/irods-signing-key.asc | sudo apt-key add - && \
-      echo "deb [arch=amd64] https://packages.irods.org/apt/ $(ubuntu_release_for_irods) main" |\
-          sudo tee /etc/apt/sources.list.d/renci-irods.list
-      sudo apt update
+            add_package_repo -f
     fi
 
     if [[ $with_opts = *\ add-needed-runtime\ * ]];  then
 	    prt_phase   added-needed-runtime
+
         add_build_prereq
+        add_package_repo
         sudo apt install -y irods-externals\*
     fi
 
