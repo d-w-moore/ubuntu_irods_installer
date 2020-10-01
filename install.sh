@@ -24,10 +24,12 @@ ubuntu_release_for_irods()
     if [ -n "$UBUNTU_RELEASE_FOR_IRODS" ]; then
         echo -n "$UBUNTU_RELEASE_FOR_IRODS"
     else
-        Calculated="$(lsb_release -sc)"
+        Calculated="$(lsb_release -sc 2>/dev/null)"
         if [ $? -ne 0 -o -z "$Calculated" ]
         then
-            echo >&2 "Can't get ubuntu release name" ; exit 124
+            echo >&2 "Can't get ubuntu release name"
+	    echo >&2 "Run: '$0 --w=config-essentials 0' to install lsb_release package."
+	    exit 124
         else
             echo -n "$Calculated"
         fi
