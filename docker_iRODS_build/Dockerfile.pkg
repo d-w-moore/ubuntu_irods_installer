@@ -1,8 +1,11 @@
 ARG linux_vsn="ubuntu:18.04"
 FROM ${linux_vsn}
 ARG irods_vsn="4.2.8"
-ARG createdb="create-db-at-build-time"
+
+#ARG createdb="create-db-at-build-time"
+ARG createdb=""
 ENV ICAT_DEFERRED_CREATEDB /tmp/icat_deferred_createdb
+
 RUN apt update
 RUN apt install -y sudo git
 WORKDIR /root

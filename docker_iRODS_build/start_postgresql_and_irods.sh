@@ -8,9 +8,9 @@ do
 done
 [ -z "$x" ] || { echo >&2 "Error -- database didn't start" ; exit 1; }
 if ! id -u irods >/dev/null 2>&1 ; then
-    if [ -f "{ICAT_DEFERRED_CREATEDB}" ] ; then
+    if [ -f "${ICAT_DEFERRED_CREATEDB}" ] ; then
         ~/ubuntu_irods_installer/install.sh --w=create-db 0
-        rm -f "{ICAT_DEFERRED_CREATEDB}"
+        rm -f "${ICAT_DEFERRED_CREATEDB}"
     fi
     ~/ubuntu_irods_installer/install.sh 5
 else
