@@ -412,14 +412,14 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  else
    cd $DEV_REPOS/build__irods &&\
    if [[ $with_opts = *" basic "* ]]; then
-     sudo dpkg -i irods-dev_${IRODS_VSN}~*.deb  irods-runtime_${IRODS_VSN}~*.deb
+     sudo dpkg -i irods-dev_${IRODS_VSN}[-~]*.deb  irods-runtime_${IRODS_VSN}[-~]*.deb
    elif [[ $with_opts = *" basic-skip "* ]]; then
-     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}~*.deb  &&\
-     sudo dpkg -i irods-server_${IRODS_VSN}~*.deb  irods-database-plugin-postgres_${IRODS_VSN}~*.deb
+     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}[-~]*.deb  &&\
+     sudo dpkg -i irods-server_${IRODS_VSN}[-~]*.deb  irods-database-plugin-postgres_${IRODS_VSN}[-~]*.deb
    else
-     sudo dpkg -i irods-dev_${IRODS_VSN}~*.deb  irods-runtime_${IRODS_VSN}~*.deb  && \
-     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}~*.deb  &&\
-     sudo dpkg -i irods-server_${IRODS_VSN}~*.deb  irods-database-plugin-postgres_${IRODS_VSN}~*.deb
+     sudo dpkg -i irods-dev_${IRODS_VSN}[-~]*.deb  irods-runtime_${IRODS_VSN}[-~]*.deb  && \
+     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}[-~]*.deb  &&\
+     sudo dpkg -i irods-server_${IRODS_VSN}[-~]*.deb  irods-database-plugin-postgres_${IRODS_VSN}[-~]*.deb
    fi
  fi
  ;;
