@@ -212,7 +212,7 @@ run_phase() {
  0)
 
     if [[ $with_opts = *\ sudo-without-pw\ * ]]; then
-      if [ `id -u` = 0 ] ; then
+      if [ `id -u` = 0 -a "${USER:-root}" = root ] ; then
         echo >&2 "root authorization for 'sudo' is automatic - no /etc/sudoers modification needed"
       else
         if [ -f "/etc/sudoers" ]; then
