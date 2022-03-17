@@ -5,6 +5,10 @@ ARG irods_vsn="4.2.8"
 #ARG createdb="create-db-at-build-time"
 ARG createdb=""
 ENV ICAT_DEFERRED_CREATEDB /tmp/icat_deferred_createdb
+ENV DEBIAN_FRONTEND noninteractive
+
+ARG ubuntu_release=
+ENV UBUNTU_RELEASE_FOR_IRODS "${ubuntu_release}"
 
 RUN apt update
 RUN apt install -y sudo git
@@ -22,3 +26,5 @@ RUN /root/ubuntu_irods_installer/install.sh --i=${irods_vsn} -r 4
 
 COPY start_postgresql_and_irods.sh /
 RUN chmod +x /start_postgresql_and_irods.sh
+
+#docker build -t u20linux --build-arg ubuntu_release=bionic --build-arg linux_vsn=ubuntu:20.04 . --no-cache
