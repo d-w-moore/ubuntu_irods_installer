@@ -5,3 +5,4 @@ RUN apt install -y bash-completion
 RUN perl -i.orig -pe 's/^#// if $x;'\
 ' /^#\s*enable.*bash.*completion/ && do{$x=1};'\
 ' /^\s*$/ && do{$x=0}' /etc/bash.bashrc 
+#
