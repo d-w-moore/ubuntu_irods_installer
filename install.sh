@@ -2,7 +2,7 @@
 
 : ${PHASE_VERBOSE:=1}
 : ${APT_INSTALL:=0}
-: ${IRODS_VSN:=4.2.8}
+: ${IRODS_VSN:=4.2.11}
 IRODS_HOME=/var/lib/irods
 DEV_HOME="$HOME"
 : ${DEV_REPOS:="$DEV_HOME/github"}
@@ -10,6 +10,7 @@ DEV_HOME="$HOME"
 RODS_DIR_PRESERVE=1
 : ${IRODS_BASH_HISTORY="$IRODS_HOME/.bash_history"}
 : ${FORCE_APT_CMD:=0}
+: ${AUTO_INSTALL_LSB_RELEASE:=1}
 
 quit_on_phase_err='1'
 
@@ -17,6 +18,15 @@ quit_on_phase_err='1'
 # set to "xenial" if targetting Ubuntu16 irods pkgs
 #--------------------------------------------------
 : ${UBUNTU_RELEASE_FOR_IRODS=""}
+
+tuple_to_int() {
+	local X=0 MULTIPLIER=100
+	while [ $# -gt 0 ]; do
+		X=$((X*MULTIPLIER+$1))
+		shift
+	done
+	echo $X
+}
 
 ubuntu_release_for_irods()
 {
@@ -35,6 +45,51 @@ ubuntu_release_for_irods()
         fi
     fi
 }
+
+Irods_Vsn_Full() {
+  local Release_Name=$1
+  if [ -z "$IRODS_VSN" ]; then
+	  echo >&2 'Need non-null $IRODS_VSN'
+  fi
+  if [ -z "$Release_Name" ]; then
+	  echo >&2 "Need non-null Release_Name arg (got '$Release_Name');" \
+	  "try setting UBUNTU_RELEASE_FOR_IRODS"
+  fi
+  [[ "$IRODS_VSN" =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]] || { echo >&2 " Error 120."; exit 120; }
+  local vsn_major=${BASH_REMATCH[1]}
+  local vsn_minor=${BASH_REMATCH[2]}
+  local vsn_patch=${BASH_REMATCH[3]}
+  # TODO : replace with tuple_to_int
+  if [ $vsn_major -eq 4 -a "$vsn_minor" -eq 2 -a "$vsn_patch" -gt 10 ]  || \
+     [  $vsn_major -eq 4 -a "$vsn_minor" -ge 3 ]; then
+    echo "${IRODS_VSN}-1~${Release_Name}"
+  else
+    echo "${IRODS_VSN}"
+  fi
+}
+
+#-------------------------------------------------------------------------------
+if [[ "${BASH_SOURCE[0]}" != "${0}" ]]; then
+	SOURCED="1"
+else
+	SOURCED=""
+fi
+#------
+if [ "$DONOTHING." = 1. ]; then
+  if [ $SOURCED ]; then
+	echo "sourced" >&2
+  else
+	[ -n "$1" ]  && IRODS_VSN=$1
+        : ${IRODS_VSN_FULL:="$(Irods_Vsn_Full $(ubuntu_release_for_irods))"}
+	echo "full package version = ($IRODS_VSN_FULL)" >&2
+	exit 110
+  fi
+fi
+#------
+[ $SOURCED ] && {  echo "quitting" >&2; return; }
+
+echo >&2 "--- got here -- " ; exit 0
+#-------------------------------------------------------------------------------
 
 add_package_repo()
 {
@@ -148,7 +203,7 @@ while [[ "$1" = -* ]]; do
     "-o") opt_o=1    ;;
     "-a") MAX=9 ;;
     --i=* | --irods=* |\
-    --irods-version=*) IRODS_VSN=${ARG#*=};;
+    --irods-version=*) IRODS_VSN_FULL=${ARG#*=};;
     --[Aa]=[0-9]* | --[Aa]ll=[0-9]* ) MAX=${ARG#*=} ;;
     --w=* | --with=* | --with-options=* ) withopts=${ARG#*=} ;;
     -v) VERBOSE=1;;
@@ -403,23 +458,24 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  ;;
 
  4)
+ : ${IRODS_VSN_FULL:="$(Irods_Vsn_Full $(ubuntu_release_for_irods))"}
  sudo pkill 'irods.*Server'
  if [ "$APT_INSTALL" -gt 0 ]; then
-   sudo apt install -y irods-{dev,runtime}${IRODS_VSN:+"=$IRODS_VSN"}
+   sudo apt install -y irods-{dev,runtime}${IRODS_VSN_FULL:+"=$IRODS_VSN_FULL"}
    if [[ $with_opts != *\ basic\ * ]]; then
-     sudo apt install -y irods-{icommands,server,database-plugin-postgres}${IRODS_VSN:+"=$IRODS_VSN"}
+     sudo apt install -y irods-{icommands,server,database-plugin-postgres}${IRODS_VSN_FULL:+"=$IRODS_VSN_FULL"}
    fi
  else
    cd $DEV_REPOS/build__irods &&\
    if [[ $with_opts = *" basic "* ]]; then
-     sudo dpkg -i irods-dev_${IRODS_VSN}[-_~]*.deb  irods-runtime_${IRODS_VSN}[-_~]*.deb
+     sudo dpkg -i irods-dev_${IRODS_VSN_FULL}[-_~]*.deb  irods-runtime_${IRODS_VSN_FULL}[-_~]*.deb
    elif [[ $with_opts = *" basic-skip "* ]]; then
-     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}[-_~]*.deb  &&\
-     sudo dpkg -i irods-server_${IRODS_VSN}[-_~]*.deb  irods-database-plugin-postgres_${IRODS_VSN}[-_~]*.deb
+     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN_FULL}[-_~]*.deb  &&\
+     sudo dpkg -i irods-server_${IRODS_VSN_FULL}[-_~]*.deb  irods-database-plugin-postgres_${IRODS_VSN_FULL}[-_~]*.deb
    else
-     sudo dpkg -i irods-dev_${IRODS_VSN}[-_~]*.deb  irods-runtime_${IRODS_VSN}[-_~]*.deb  && \
-     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN}[-_~]*.deb  &&\
-     sudo dpkg -i irods-server_${IRODS_VSN}[-_~]*.deb  irods-database-plugin-postgres_${IRODS_VSN}[-_~]*.deb
+     sudo dpkg -i irods-dev_${IRODS_VSN_FULL}[-_~]*.deb  irods-runtime_${IRODS_VSN_FULL}[-_~]*.deb  && \
+     sudo dpkg -i ../build__irods_client_icommands/irods-icommands_${IRODS_VSN_FULL}[-_~]*.deb  &&\
+     sudo dpkg -i irods-server_${IRODS_VSN_FULL}[-_~]*.deb  irods-database-plugin-postgres_${IRODS_VSN_FULL}[-_~]*.deb
    fi
  fi
  ;;
@@ -432,8 +488,9 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  ;;
 
  6)
+ [[ "$IRODS_VSN" =~ ([0-9]+)\.([0-9]+)\.([0-9]+) ]] || { echo >&2 " Error 119."; exit 119; }
  if [ "$APT_INSTALL" -gt 0 ]; then
-   if [ "$IRODS_VSN" ">" "4.2." -a "${IRODS_VSN##*.}" -gt 7 ] ; then
+   if [ $(tuple_to_int ${BASH_REMATCH[*]:1}) -gt $(tuple_to_int 4 2 7) ]; then
      EXT='.*'
    else
      EXT=''
