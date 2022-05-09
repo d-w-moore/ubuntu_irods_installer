@@ -433,15 +433,16 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
 
  6)
  if [ "$APT_INSTALL" -gt 0 ]; then
-   if [ "$IRODS_VSN" ">" "4.2." -a "${IRODS_VSN##*.}" -gt 7 ] ; then
-     EXT='.*'
-   else
-     EXT=''
-   fi
-   sudo apt install irods-rule-engine-plugin-python${IRODS_VSN:+"=$IRODS_VSN${EXT}"}
+   IRODS_VSN_EXT=`sudo apt list -a irods-rule-engine-plugin-python 2>/dev/null| awk '{print $2}'`
+   echo >&2 "=== PLUGIN INSTALL ==="
+   INSTALLED=""
+   select d in $IRODS_VSN_EXT; do
+     sudo apt install irods-rule-engine-plugin-python${d:+"=$d"} && INSTALLED=1
+   done
+   [ "$INSTALLED" ]
  else
    cd $DEV_REPOS/build__irods_rule_engine_plugin_python/ &&\
-   sudo dpkg -i irods-rule-engine-plugin-python-${IRODS_VSN}[-.]*.deb
+   sudo dpkg -i irods-rule-engine-plugin-python-${IRODS_VSN}[-_~]*.deb
  fi
  ;;
 
