@@ -430,7 +430,7 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  ;;
 
  5)
- if [ $IRODS_VSN '>=' '4.3' ]; then
+ if [ ! "$IRODS_VSN" '<' "4.3" ]; then
     PYTHON=python3
  else
     PYTHON=python2
