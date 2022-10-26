@@ -12,7 +12,8 @@ if ! id -u irods >/dev/null 2>&1 ; then
         ~/ubuntu_irods_installer/install.sh --w=create-db 0
         rm -f "${ICAT_DEFERRED_CREATEDB}"
     fi
-    ~/ubuntu_irods_installer/install.sh 5
+    VERSION_file=$(ls /var/lib/irods/{VERSION,version}.json.dist 2>/dev/null)
+    IRODS_VSN=$(jq -r '.irods_version' $VERSION_file) ~/ubuntu_irods_installer/install.sh 5
 else
     su - irods -c '~/irodsctl start'
 fi

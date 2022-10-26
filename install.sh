@@ -244,7 +244,12 @@ run_phase() {
         sudo apt-get update
         sudo apt-get install -y software-properties-common apt-transport-https vim git postgresql wget
         sudo apt-get update && sudo apt-get install -y vim python-pip libfuse2 unixodbc rsyslog less
+        sudo apt-get install -y jq
         sudo pip install xmlrunner
+        if [ $IRODS_VSN '>=' '4.3' ]; then
+          sudo apt install python3-pip
+          pip3 install distro
+        fi
         sudo service postgresql start
     fi
 
@@ -425,7 +430,12 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  ;;
 
  5)
- sudo python /var/lib/irods/scripts/setup_irods.py < /var/lib/irods/packaging/localhost_setup_postgres.input
+ if [ $IRODS_VSN '>=' '4.3' ]; then
+    PYTHON=python3
+ else
+    PYTHON=python2
+ fi
+ sudo $PYTHON /var/lib/irods/scripts/setup_irods.py < /var/lib/irods/packaging/localhost_setup_postgres.input
  if [ -f /tmp/iRODS_History ]; then
      sudo su irods -c "mv /tmp/iRODS_History '$IRODS_BASH_HISTORY'"
  fi
