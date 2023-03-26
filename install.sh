@@ -246,7 +246,7 @@ run_phase() {
         sudo apt-get update && sudo apt-get install -y vim python-pip libfuse2 unixodbc rsyslog less
         sudo apt-get install -y jq
         sudo pip install xmlrunner
-        if [ $IRODS_VSN '>=' '4.3' ]; then
+        if [ ! $IRODS_VSN '<' '4.3' ]; then
           sudo apt install python3-pip
           pip3 install distro
         fi
