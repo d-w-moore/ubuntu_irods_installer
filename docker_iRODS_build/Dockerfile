@@ -16,10 +16,11 @@ RUN git clone http://github.com/irods/irods --recursive
 RUN git clone http://github.com/irods/irods_client_icommands
 RUN for SRC in irods*/; do ( cd $SRC ; git checkout ${irods_vsn} ); done
 RUN for SRC in irods*/; do mkdir build__$SRC; done
-RUN cd build__irods && /opt/irods-externals/cmake3.1[0-9]*/bin/cmake ../irods -GNinja
+RUN cd irods && git submodule update --init
+RUN cd build__irods && /opt/irods-externals/cmake3.1[0-9]*/bin/cmake ../irods -GNinja -DCMAKE_BUILD_TYPE=Debug
 RUN cd build__irods && ninja package
 RUN /root/ubuntu_irods_installer/install.sh --i=${irods_vsn} --w=basic 4
-RUN cd build__irods_client_icommands && /opt/irods-externals/cmake3.1[0-9]*/bin/cmake ../irods_client_icommands -GNinja
+RUN cd build__irods_client_icommands && /opt/irods-externals/cmake3.1[0-9]*/bin/cmake ../irods_client_icommands -GNinja -DCMAKE_BUILD_TYPE=Debug
 RUN cd build__irods_client_icommands && ninja package
 RUN /root/ubuntu_irods_installer/install.sh --i=${irods_vsn} --w=basic-skip 4
 
