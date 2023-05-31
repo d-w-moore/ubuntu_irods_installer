@@ -1,0 +1,11 @@
+version: '3'
+services:
+    provider:
+        hostname: irods-provider
+        build:
+            context: .
+            dockerfile: Dockerfile.pkg
+            args:
+                irods_vsn: 4.2.12-1~bionic
+        init: true
+        tty: true
