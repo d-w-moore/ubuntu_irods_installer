@@ -310,12 +310,13 @@ run_phase() {
     echo >&2 "-- Creating ICAT database -- "
     sudo su - postgres -c "
         { dropdb --if-exists ICAT
-          dropuser --if-exists irods ; } >/dev/null 2>&1"
+          dropuser --if-exists irods; } >/dev/null 2>&1"
     sudo su - postgres -c "psql <<\\
 ________
         CREATE DATABASE \"ICAT\";
         CREATE USER irods WITH PASSWORD 'testpassword';
         GRANT ALL PRIVILEGES ON DATABASE \"ICAT\" to irods;
+        ALTER DATABASE \"ICAT\" OWNER TO irods;
 ________"
     echo >&2 "-- status of create-db =  $? -- "
     fi
@@ -365,7 +366,7 @@ ________"
 
  2)
  sudo su - postgres -c 'dropdb --if-exists ICAT &&\
-                        createdb ICAT && echo >&2 "DB cleared"'
+                        createdb ICAT &&  psql -c"ALTER DATABASE \"ICAT\" OWNER TO irods;" && echo >&2 "DB cleared"'
  ;;
 
  3)
