@@ -436,6 +436,14 @@ dpkg -l irods\* | sed -n '/^\w\w*\s\s*irods[-_]/p' \
  else
     PYTHON=python2
  fi
+ # -- in iRODS 5 we need this dir to spawn irodsServer unless -p is used. 
+ VRI="/var/run/irods"
+ if [ ! "$IRODS_VSN" '<' "5" ]; then
+   if [ ! -e "$VRI" ]; then
+     { sudo mkdir "$VRI" && sudo chown irods:irods "$VRI"; } ||\
+     { echo >&2 "error with create/chown on '$VRI'"; exit 111; }
+   fi
+ fi
  sudo $PYTHON /var/lib/irods/scripts/setup_irods.py < /var/lib/irods/packaging/localhost_setup_postgres.input
  if [ -f /tmp/iRODS_History ]; then
      sudo su irods -c "mv /tmp/iRODS_History '$IRODS_BASH_HISTORY'"
